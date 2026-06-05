@@ -1,0 +1,11 @@
+steps:
+  - name: Send WeChat
+    run: |
+      curl -s "把你的企业微信Webhook放这里" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "msgtype":"text",
+        "text":{
+          "content":"GitHub自动推送测试成功"
+        }
+      }'
