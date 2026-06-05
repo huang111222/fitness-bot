@@ -1,4 +1,6 @@
-name: Daily Fitness
+- name: Install jq
+  run: sudo apt-get install -y jq
+  name: Daily Fitness
 
 on:
   push:
@@ -18,6 +20,6 @@ jobs:
           -d '{
             "msgtype":"text",
             "text":{
-              "content":"GitHub自动任务测试成功"
+              "content":""🏋️ 今日训练已生成\n\n📌 励志语录：\n"$(curl -s https://api.quotable.io/random | jq -r '.content')"\n\n🔥 今日训练：\nGitHub自动任务已执行成功""
             }
           }'
