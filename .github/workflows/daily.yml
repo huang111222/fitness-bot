@@ -1,25 +1,45 @@
-- name: Install jq
-  run: sudo apt-get install -y jq
-  name: Daily Fitness
+name: Daily Fitness
 
 on:
   push:
   workflow_dispatch:
   schedule:
-    - cron: '30 22 * * *'
+    - cron: '30 22 * * *'  # 06:30 新加坡时间
 
 jobs:
   send:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send WeChat
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Generate and Send Message
         run: |
+          # ===== 获取英文励志语 =====
+          QUOTE=$(curl -s https://api.quotable.io/random | jq -r '.content')
+
+          # ===== 翻译中文 =====
+          CN=$(curl -s "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${QUOTE}" | jq -r '.[0][0][0]')
+
+          # ===== 随机训练风格 =====
+          STYLE=$((RANDOM % 3))
+
+          if [ $STYLE -eq 0 ]; then
+            STYLE_TEXT="🔥 力量日 / Strength Day"
+          elif [ $STYLE -eq 1 ]; then
+            STYLE_TEXT="🏃 有氧日 / Cardio Day"
+          else
+            STYLE_TEXT="🧘 恢复日 / Recovery Day"
+          fi
+
+          # ===== 固定训练内容 =====
+          WORKOUT="1. 热身10分钟\n2. 壶铃训练\n3. 哑铃训练\n4. 骑行30分钟\n5. 核心训练10分钟"
+
+          # ===== 拼接消息 =====
+          MSG="🏋️ 今日训练计划\n\n${STYLE_TEXT}\n\n📌 励志语录\nEN: ${QUOTE}\nCN: ${CN}\n\n🔥 训练内容\n${WORKOUT}"
+
+          # ===== 发企业微信 =====
           curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
           -H "Content-Type: application/json" \
-          -d '{
-            "msgtype":"text",
-            "text":{
-              "content":""🏋️ 今日训练已生成\n\n📌 励志语录：\n"$(curl -s https://api.quotable.io/random | jq -r '.content')"\n\n🔥 今日训练：\nGitHub自动任务已执行成功""
-            }
-          }'
+          -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"${MSG}\"}}"
