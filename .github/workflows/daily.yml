@@ -1,11 +1,23 @@
-steps:
-  - name: Send WeChat
-    run: |
-      curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "msgtype":"text",
-        "text":{
-          "content":"GitHub自动推送测试成功"
-        }
-      }'
+name: Daily Fitness
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 22 * * *'
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send WeChat
+        run: |
+          curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "msgtype":"text",
+            "text":{
+              "content":"GitHub自动任务测试成功"
+            }
+          }'
