@@ -1,1 +1,29 @@
+name: Daily Fitness
 
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 22 * * *"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send WeChat
+        run: |
+          MSG="🏋️ 今日训练计划
+
+励志语录：
+Discipline beats motivation / 自律胜过动力
+
+训练内容：
+热身10分钟
+壶铃训练
+哑铃训练
+骑行30分钟
+核心训练"
+
+          curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
+          -H "Content-Type: application/json" \
+          -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"$MSG\"}}"
