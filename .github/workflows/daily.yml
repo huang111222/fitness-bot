@@ -13,14 +13,16 @@ jobs:
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y curl jq
 
-      - name: Generate and Send Message
+      - name: Run script
         run: |
+          set -e
+
           QUOTE=$(curl -s https://api.quotable.io/random | jq -r '.content')
 
-          CN=$(curl -s "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=$QUOTE" | jq -r '.[0][0][0]')
+          CN=$(curl -s "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${QUOTE}" | jq -r '.[0][0][0]')
 
           if [ -z "$CN" ] || [ "$CN" = "null" ]; then
-            CN="坚持训练，持续进步"
+            CN="坚持训练，持续进步才是关键"
           fi
 
           STYLE=$((RANDOM % 3))
@@ -36,19 +38,22 @@ jobs:
             MAIN="轻松骑行 20分钟\n拉伸 15分钟\n核心激活 10分钟"
           fi
 
-          MSG="🏋️ 今日训练计划
+          MSG=$(cat <<EOF
+🏋️ 今日训练计划
 
-🔥 类型：$TYPE
+🔥 类型：${TYPE}
 
 📌 励志语录
-EN: $QUOTE
-CN: $CN
+EN: ${QUOTE}
+CN: ${CN}
 
 🔥 训练内容
 热身 10分钟
-$MAIN
-拉伸 10分钟"
+${MAIN}
+拉伸 10分钟
+EOF
+)
 
           curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
             -H "Content-Type: application/json" \
-            -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"$MSG\"}}"
+            -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"${MSG}\"}}"
