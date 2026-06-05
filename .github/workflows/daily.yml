@@ -10,50 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y curl jq
-
-      - name: Run script
+      - name: Send WeChat Message
         run: |
-          set -e
+          QUOTE="Discipline is the bridge between goals and results."
+          CN="自律是目标与结果之间的桥梁"
 
-          QUOTE=$(curl -s https://api.quotable.io/random | jq -r '.content')
+          MSG="🏋️ 今日训练计划
 
-          CN=$(curl -s "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${QUOTE}" | jq -r '.[0][0][0]')
-
-          if [ -z "$CN" ] || [ "$CN" = "null" ]; then
-            CN="坚持训练，持续进步才是关键"
-          fi
-
-          STYLE=$((RANDOM % 3))
-
-          if [ "$STYLE" -eq 0 ]; then
-            TYPE="力量训练"
-            MAIN="深蹲 4×12\n壶铃摆荡 4×20\n哑铃推举 4×12"
-          elif [ "$STYLE" -eq 1 ]; then
-            TYPE="有氧训练"
-            MAIN="骑行 40分钟\n冲刺 6×1分钟\n核心 3×60秒"
-          else
-            TYPE="恢复训练"
-            MAIN="轻松骑行 20分钟\n拉伸 15分钟\n核心激活 10分钟"
-          fi
-
-          MSG=$(cat <<EOF
-🏋️ 今日训练计划
-
-🔥 类型：${TYPE}
-
-📌 励志语录
-EN: ${QUOTE}
-CN: ${CN}
+🔥 励志语录
+EN: $QUOTE
+CN: $CN
 
 🔥 训练内容
-热身 10分钟
-${MAIN}
-拉伸 10分钟
-EOF
-)
+热身10分钟
+壶铃训练
+哑铃训练
+骑行30分钟
+核心训练"
 
           curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
             -H "Content-Type: application/json" \
-            -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"${MSG}\"}}"
+            -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"$MSG\"}}"
