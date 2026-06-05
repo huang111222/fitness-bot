@@ -1,72 +1,54 @@
-name: Daily Fitness Stable
+name: Daily Fitness
 
 on:
-  push:
-  workflow_dispatch:
   schedule:
-    - cron: '30 22 * * *'  # 06:30 新加坡时间
+    - cron: "30 22 * * *"
+  workflow_dispatch:
 
 jobs:
-  send:
+  run:
     runs-on: ubuntu-latest
 
     steps:
       - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y jq curl
+        run: sudo apt-get update && sudo apt-get install -y curl jq
 
-      - name: Generate and Send
+      - name: Generate and Send Message
         run: |
-          set -e
-
           QUOTE=$(curl -s https://api.quotable.io/random | jq -r '.content')
 
-          CN=$(curl -s "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${QUOTE}" | jq -r '.[0][0][0]')
+          CN=$(curl -s "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=$QUOTE" | jq -r '.[0][0][0]')
 
           if [ -z "$CN" ] || [ "$CN" = "null" ]; then
-            CN="坚持训练，持续进步才是关键"
+            CN="坚持训练，持续进步"
           fi
 
           STYLE=$((RANDOM % 3))
 
-          case $STYLE in
-            0)
-              STYLE_TEXT="🔥 力量日 / Strength Day"
-              MAIN="深蹲 4×12
-壶铃摆荡 4×20
-哑铃推举 4×12"
-              ;;
-            1)
-              STYLE_TEXT="🏃 有氧日 / Cardio Day"
-              MAIN="骑行 40分钟
-间歇冲刺 6×1分钟
-核心平板 3×60秒"
-              ;;
-            2)
-              STYLE_TEXT="🧘 恢复日 / Recovery Day"
-              MAIN="轻松骑行 20分钟
-全身拉伸 15分钟
-核心激活 10分钟"
-              ;;
-          esac
-
-          WORKOUT="热身 10分钟（动态激活）\n${MAIN}\n放松拉伸 10分钟"
-
-          if [ -z "$QUOTE" ] || [ "$QUOTE" = "null" ]; then
-            QUOTE="Discipline beats motivation."
-            CN="自律胜过动力"
+          if [ "$STYLE" -eq 0 ]; then
+            TYPE="力量训练"
+            MAIN="深蹲 4×12\n壶铃摆荡 4×20\n哑铃推举 4×12"
+          elif [ "$STYLE" -eq 1 ]; then
+            TYPE="有氧训练"
+            MAIN="骑行 40分钟\n冲刺 6×1分钟\n核心 3×60秒"
+          else
+            TYPE="恢复训练"
+            MAIN="轻松骑行 20分钟\n拉伸 15分钟\n核心激活 10分钟"
           fi
 
           MSG="🏋️ 今日训练计划
 
-${STYLE_TEXT}
+🔥 类型：$TYPE
 
 📌 励志语录
-EN: ${QUOTE}
-CN: ${CN}
+EN: $QUOTE
+CN: $CN
 
 🔥 训练内容
-${WORKOUT}"
+热身 10分钟
+$MAIN
+拉伸 10分钟"
 
           curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
-          -H "Content-Type: application/json" \
-          -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"${MSG}\"}}"
+            -H "Content-Type: application/json" \
+            -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"$MSG\"}}"
