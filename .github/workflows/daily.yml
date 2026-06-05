@@ -1,7 +1,7 @@
 steps:
   - name: Send WeChat
     run: |
-      curl -s "把你的企业微信Webhook放这里" \
+      curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
       -H "Content-Type: application/json" \
       -d '{
         "msgtype":"text",
