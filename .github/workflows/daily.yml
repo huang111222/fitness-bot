@@ -18,42 +18,36 @@ jobs:
         run: |
           set -e
 
-          # ===== 英文励志语 =====
           QUOTE=$(curl -s https://api.quotable.io/random | jq -r '.content')
 
-          # ===== 中文翻译（失败兜底）=====
-          CN=$(curl -s "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${QUOTE}" \
-          | jq -r '.[0][0][0]')
+          CN=$(curl -s "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${QUOTE}" | jq -r '.[0][0][0]')
 
           if [ -z "$CN" ] || [ "$CN" = "null" ]; then
             CN="坚持训练，改变来自持续行动"
           fi
 
-          # ===== 随机训练风格 =====
           STYLE=$((RANDOM % 3))
 
           if [ $STYLE -eq 0 ]; then
-            STYLE_TEXT="🔥 力量强化日 / Strength Focus"
+            STYLE_TEXT="🔥 力量日 / Strength Day"
             MAIN="深蹲 4×12\n壶铃摆荡 4×20\n哑铃推举 4×12"
           elif [ $STYLE -eq 1 ]; then
-            STYLE_TEXT="🏃 有氧燃脂日 / Cardio Day"
+            STYLE_TEXT="🏃 有氧日 / Cardio Day"
             MAIN="骑行 40分钟\n间歇冲刺 6×1分钟\n核心平板 3×60秒"
           else
-            STYLE_TEXT="🧘 恢复与核心日 / Recovery Day"
-            MAIN="轻松骑行 20分钟\n拉伸 15分钟\n核心训练 15分钟"
+            STYLE_TEXT="🧘 恢复日 / Recovery Day"
+            MAIN="轻松骑行 20分钟\n拉伸 15分钟\n核心激活 10分钟"
           fi
 
-          # ===== 固定结构 =====
           WORKOUT="热身 10分钟（动态拉伸+关节激活）\n${MAIN}\n放松拉伸 10分钟"
 
-          # ===== 励志语兜底 =====
           if [ -z "$QUOTE" ] || [ "$QUOTE" = "null" ]; then
             QUOTE="Discipline is the bridge between goals and results."
             CN="自律是目标与结果之间的桥梁"
           fi
 
-          # ===== 最终消息 =====
-          MSG="🏋️ 今日训练计划
+          MSG=$(cat <<EOF
+🏋️ 今日训练计划
 
 ${STYLE_TEXT}
 
@@ -62,9 +56,10 @@ EN: ${QUOTE}
 CN: ${CN}
 
 🔥 训练内容
-${WORKOUT}"
+${WORKOUT}
+EOF
+)
 
-          # ===== 推送 =====
           curl -s "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=53ab5af5-b293-4dcc-ad40-fc6508c48924" \
           -H "Content-Type: application/json" \
           -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"${MSG}\"}}"
